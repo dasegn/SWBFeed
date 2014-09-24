@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.semanticwb.Logger;
+import org.semanticwb.SWBException;
 import org.semanticwb.SWBPortal;
 import org.semanticwb.SWBUtils;
 import org.semanticwb.model.Resource;
@@ -30,6 +32,7 @@ import org.semanticwb.model.User;
 import org.semanticwb.model.WebPage;
 import org.semanticwb.model.WebSite;
 import org.semanticwb.portal.api.GenericAdmResource;
+import org.semanticwb.portal.api.SWBActionResponse;
 import org.semanticwb.portal.api.SWBParamRequest;
 import org.semanticwb.portal.api.SWBResourceException;
 import org.semanticwb.portal.api.SWBResourceURL;
@@ -43,38 +46,64 @@ public class SWBFeed extends GenericAdmResource {
     private PrintWriter out = null;  
     
     @Override
-    public void doView(HttpServletRequest request, HttpServletResponse response, SWBParamRequest paramsRequest) throws SWBResourceException, IOException {
+    public void doView(HttpServletRequest request, HttpServletResponse response, SWBParamRequest paramsRequest) throws SWBResourceException {
         try {
-            out = response.getWriter();
-            
-            out.println(SWBFeedReader.readRSS("http://digg.com/user/739651c5c9b74604b71fdb344a203cd4/diggs.rss").toString());
-            
+            out = response.getWriter();  
+            Resource base = paramsRequest.getResourceBase();
+            String urlRSS = base.getAttribute("urlRSS", "");
+            out.println(SWBFeedReader.readRSS(urlRSS).toString());            
             out.flush();
             out.close();            
-        } catch (Exception e){
-            log.error("Ocurrió un error en la construcción de la vista del mapa:\n "+e.getMessage());
+        } catch (IOException e){
+            log.error("Ocurrió un error en la construcción de la vista del rescurso:\n "+e.getMessage());
         }
     }
     @Override
-    public void doAdmin(HttpServletRequest request, HttpServletResponse response, SWBParamRequest paramReq) throws IOException, SWBResourceException {    
-        StringWriter sw = new StringWriter();
+    public void doAdmin(HttpServletRequest request, HttpServletResponse response, SWBParamRequest paramReq) {    
         SWBResourceURL url = paramReq.getActionUrl();
+        try {            
+            VelocityContext context = new VelocityContext();
+            context.put("actionURL", url);            
+            context.put("msg", request.getParameter("msg"));
+            context.put("urlRSS", this.getResourceBase().getAttribute("urlRSS",""));      
+            runTemplate(response, context, "SWBFeedAdmin");          
+        } catch(Exception e){
+            log.error("Ocurrió un error durante la construcción de la vista de administración. "+e.getMessage()); 
+            e.printStackTrace();
+        }        
+    }
+
+    @Override
+    public void processAction(HttpServletRequest request, SWBActionResponse response) throws SWBResourceException, IOException {
+        Resource base = getResourceBase();
+        try {
+            Enumeration names = request.getParameterNames();
+            while (names.hasMoreElements()){
+                String name = (String) names.nextElement();
+                base.setAttribute(name, request.getParameter(name));
+            }
+            base.updateAttributesToDB();
+            response.setRenderParameter("msg", "true");            
+        } catch(SWBException e){
+            response.setRenderParameter("msg", "false");            
+            log.error(e);
+        }
+    }    
+    public void runTemplate(HttpServletResponse response, VelocityContext ctx, String tplName){
+        StringWriter sw = new StringWriter();
         try {
             out = response.getWriter();
-            VelocityContext context = new VelocityContext();
-            context.put("webpath", getWebPath());
-            context.put("actURL", url);            
-            context.put("rmsg", request.getParameter("rmsg"));
-            context.put("estado", this.getResourceBase().getAttribute("estado"));
-            Template tmpl = prepareTemplate("SWBFeedAdmin.vm");
-            tmpl.merge(context, sw);            
-            out.println(sw);            
-        } catch(Exception ex){
-            log.error("Ocurrió un error durante la construcción de la vista de administración. "+ex.getMessage());                            
+            ctx.put("webPath", getWebPath());
+            Template tmpl = prepareTemplate(tplName + ".vm");
+            tmpl.merge(ctx, sw);            
+            out.println(sw); 
+            out.close();
+        } catch(IOException e){
+            log.error("Ocurrió un error durante la ejecución de la vista "+ tplName +"  \n "+e.getMessage()); 
+            e.printStackTrace();            
         }
-        out.close();
-    }  
-    
+    }
+        
     public Template prepareTemplate(String name){
         Template tmpl = null;
         try {
@@ -82,7 +111,7 @@ public class SWBFeed extends GenericAdmResource {
             Properties p = new Properties();
             p.setProperty("resource.loader", "file");
             p.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
-            p.setProperty("file.resource.loader.path", getWPath());
+            p.setProperty("file.resource.loader.path", getWPath() + "templates");
             p.setProperty("file.resource.loader.cache", "false");
             ve.init(p);
             tmpl = ve.getTemplate(name, "UTF-8");                   
@@ -98,7 +127,7 @@ public class SWBFeed extends GenericAdmResource {
 
         // Estableciendo parametros de la instancia
         resourceType.setTitle("SWBFeed");
-        resourceType.setDescription("Recurso que administra fuentes RSS y parseea su información. ");
+        resourceType.setDescription("Recurso que administra fuentes RSS y parsea su información. ");
         //resourceType.get
         boolean mkDir = false;
         

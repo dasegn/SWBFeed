@@ -9,11 +9,13 @@ import com.google.gson.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -22,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
 import org.semanticwb.Logger;
 import org.semanticwb.SWBException;
 import org.semanticwb.SWBPortal;
@@ -48,14 +51,32 @@ public class SWBFeed extends GenericAdmResource {
     @Override
     public void doView(HttpServletRequest request, HttpServletResponse response, SWBParamRequest paramsRequest) throws SWBResourceException {
         try {
-            out = response.getWriter();  
+            VelocityContext context = new VelocityContext();
             Resource base = paramsRequest.getResourceBase();
             String urlRSS = base.getAttribute("urlRSS", "");
-            out.println(SWBFeedReader.readRSS(urlRSS).toString());            
-            out.flush();
-            out.close();            
-        } catch (IOException e){
-            log.error("Ocurrió un error en la construcción de la vista del rescurso:\n "+e.getMessage());
+            int pageItems = Integer.parseInt(base.getAttribute("pageItems","10"));  
+            String param = request.getParameter("page");            
+            int pageNumber = (param == null) ? 1 : Integer.parseInt(param);          
+            
+            SWBFeedPageable pg = new SWBFeedPageable(SWBFeedReader.readRSS(urlRSS));            
+            pg.setPageSize(pageItems);
+            pg.setPage(pageNumber);
+            
+            List<String> pagination = setPagination(paramsRequest, pageItems, pageNumber, pg);           
+
+            
+            
+            
+            context.put("pg", pg);           
+            context.put("urlRSS", urlRSS);
+            context.put("entries", pg.getListForPage());
+            context.put("pagination", pagination);
+            context.put("pageNumber", pageNumber);
+            runTemplate(response, context, "SWBFeed");
+        } catch (Exception e){
+            log.error("Ocurrió un error en la construcción de la vista del recurso:\n "+e.getMessage());
+            log.error(getStack(e));
+            e.printStackTrace();
         }
     }
     @Override
@@ -65,7 +86,8 @@ public class SWBFeed extends GenericAdmResource {
             VelocityContext context = new VelocityContext();
             context.put("actionURL", url);            
             context.put("msg", request.getParameter("msg"));
-            context.put("urlRSS", this.getResourceBase().getAttribute("urlRSS",""));      
+            context.put("urlRSS", paramReq.getResourceBase().getAttribute("urlRSS","")); 
+            context.put("pageItems", paramReq.getResourceBase().getAttribute("urlRSS","10")); 
             runTemplate(response, context, "SWBFeedAdmin");          
         } catch(Exception e){
             log.error("Ocurrió un error durante la construcción de la vista de administración. "+e.getMessage()); 
@@ -88,7 +110,20 @@ public class SWBFeed extends GenericAdmResource {
             response.setRenderParameter("msg", "false");            
             log.error(e);
         }
+    } 
+
+    public List<String> setPagination(SWBParamRequest paramsRequest,int pageItems, int page, SWBFeedPageable pg){
+        List<String> urls = new ArrayList<>();
+        pg.setPageSize(pageItems);
+        pg.setPage(page);
+        for(int i=0; i <= pg.getMaxPageRange();++i){
+            SWBResourceURL url = paramsRequest.getRenderUrl();
+            url.setParameter("page", Integer.toString(i)); 
+            urls.add(url.toString());
+        }
+        return urls;
     }    
+    
     public void runTemplate(HttpServletResponse response, VelocityContext ctx, String tplName){
         StringWriter sw = new StringWriter();
         try {
@@ -109,6 +144,8 @@ public class SWBFeed extends GenericAdmResource {
         try {
             VelocityEngine ve = new VelocityEngine();
             Properties p = new Properties();
+            p.setProperty( RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS,"org.apache.velocity.runtime.log.Log4JLogChute" );
+            p.setProperty("runtime.log.logsystem.log4j.logger","SWBFeed.class");
             p.setProperty("resource.loader", "file");
             p.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
             p.setProperty("file.resource.loader.path", getWPath() + "templates");
@@ -121,6 +158,7 @@ public class SWBFeed extends GenericAdmResource {
         }
         return tmpl;
     }
+    
     @Override
     public void install(ResourceType resourceType) throws SWBResourceException {  
         String path = SWBPortal.getWorkPath()+resourceType.getWorkPath();

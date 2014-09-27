@@ -22,14 +22,15 @@ import java.util.List;
  * @author daniel.martinez
  */
 public class SWBFeedReader {
-    public static StringBuilder readRSS(String url) {
+    public static List readRSS(String url) {
         URL feedSource;
         StringBuilder sb = new StringBuilder();
+        List listEntries = null;        
         try {
             feedSource = new URL(url);
             SyndFeedInput input = new SyndFeedInput();
             SyndFeed feed = input.build(new XmlReader(feedSource));
-            List listEntries =feed.getEntries();
+            listEntries =feed.getEntries();
             Iterator it= listEntries.iterator();
             while(it.hasNext()){
                 SyndEntry entrada = (SyndEntry)it.next();
@@ -53,7 +54,7 @@ public class SWBFeedReader {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return sb;
+        return listEntries;
     }
     
 }

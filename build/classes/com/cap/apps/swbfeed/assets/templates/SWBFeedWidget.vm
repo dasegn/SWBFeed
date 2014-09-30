@@ -1,0 +1,14 @@
+<div id="rssFeed">
+	<ul id="noticiasnoticiasinfotec">
+	#foreach( $entry in $entries )
+		<li>
+			<h4><a href="$entry.getLink()">$entry.getTitle()</a></h4>
+			<span class="fecha">$entry.getPublishedDate().toString()</span>
+			<span class="fuente"></span>
+			<p>
+			    $entry.getDescription().getValue()
+			</p>
+		</li>
+	#end
+	</ul>	
+</div>

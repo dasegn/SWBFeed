@@ -23,7 +23,7 @@
         #end       
         <form id="frmSWBFeedResource" action="${actionURL}" type="POST" class="form-horizontal" role="form">
             <div class="form-group">
-                <label class="control-label col-sm-2 " for="email">URL de fuente RSS</label>
+                <label class="control-label col-sm-2 " for="urlRSS">URL de fuente RSS</label>
                 <div class="col-sm-10">
                     <input type="url" value="${urlRSS}"class="form-control" id="urlRSS" name="urlRSS" placeholder="URL de fuente RSS" />
                 </div>

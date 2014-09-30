@@ -19,7 +19,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.servlet.http.HttpServletResponse;
 import org.semanticwb.Logger;
+import org.semanticwb.SWBPortal;
 import org.semanticwb.SWBUtils;
+import org.semanticwb.model.Resource;
 import org.semanticwb.model.WebPage;
 
 
@@ -109,6 +111,25 @@ public class SWBFeedUtils {
                                                      
         return sb.toString();        
     }   
+    
+    public static String getWPath(Resource res){
+        String base = res.getResourceType().getWorkPath();
+        return SWBPortal.getWorkPath().replace("//", "/") + base+"/";
+    }
+    public static String getWebPath(Resource res){
+        String base = res.getResourceType().getWorkPath();
+        return SWBPortal.getWebWorkPath() + base+ "/";
+    }
+    
+    
+    public static boolean isNumber(String string){
+        try {
+            Long.parseLong(string);
+        } catch (Exception e){
+            return false;
+        }
+        return true;
+    }
     
     // Haciendo la clase no instanciable
     private SWBFeedUtils() { }

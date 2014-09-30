@@ -13,6 +13,7 @@ import com.sun.syndication.io.XmlReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +26,7 @@ public class SWBFeedReader {
     public static List readRSS(String url) {
         URL feedSource;
         StringBuilder sb = new StringBuilder();
-        List listEntries = null;        
+        List listEntries = new ArrayList();        
         try {
             feedSource = new URL(url);
             SyndFeedInput input = new SyndFeedInput();

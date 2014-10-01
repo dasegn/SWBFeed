@@ -130,7 +130,15 @@ public class SWBFeedUtils {
         }
         return true;
     }
-    
+    public static int toInteger(String number, String pre){
+        int newNumber = 0;
+        if(isNumber(number)){
+            newNumber = Integer.parseInt(number);
+        } else {
+            newNumber = Integer.parseInt(pre);
+        }
+        return newNumber;
+    }
     // Haciendo la clase no instanciable
     private SWBFeedUtils() { }
 }

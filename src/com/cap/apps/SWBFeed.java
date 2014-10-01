@@ -54,6 +54,7 @@ public class SWBFeed extends GenericAdmResource {
             int pageNumber = (param != null && (SWBFeedUtils.isNumber(param))) ? Integer.parseInt(param) : 1; 
             
             if(!urlRSS.isEmpty()){
+                SWBFeedReader.setCropText(false, 0);
                 List feeds = SWBFeedReader.readRSS(urlRSS);
                 if( feeds.size() > 0 ){            
                     SWBFeedPageable pg = new SWBFeedPageable(feeds);            

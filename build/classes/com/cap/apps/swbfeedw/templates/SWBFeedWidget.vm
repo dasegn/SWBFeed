@@ -10,5 +10,10 @@
 			</p>
 		</li>
 	#end
-	</ul>	
+	</ul>
+	<div class="btnVer">
+            <a class="ver_mas" href="${urlFull}">
+                Ver más
+            </a>
+        </div>
 </div>

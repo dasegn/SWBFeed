@@ -15,9 +15,12 @@
 	<div class="paginador">
 		<p>Resultados ${entriesPageSize} de ${entriesTotalSize}   |   Página ${pageNumber} de ${pageLimit}</p>
 		<ul>
-			<li><a href="${pagePrevious}" class="prev" title="anterior">&nbsp;</a></li>
+                    <li><a href="${pagePrevious}" class="prev" title="anterior">&nbsp;</a></li>
 			#foreach( $pag in $pagination.entrySet() )
-				<li><a href="$pag.value">$pag.key</a></li>
+                            <li>
+                                <a #if($pageNumber == $pag.key) class="active" #end
+                                href="$pag.value">$pag.key</a>
+                            </li>
 			#end		
 		    <li><a href="${pageNext}" class="next" title="siguiente">&nbsp;</a></li>
 

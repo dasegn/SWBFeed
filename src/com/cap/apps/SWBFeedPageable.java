@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  *
- * @author daniel.martinez
+ * @author Simon Brown
  * @param <T>
  */
 

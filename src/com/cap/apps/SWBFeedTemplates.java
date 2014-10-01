@@ -57,7 +57,7 @@ public class SWBFeedTemplates {
             tmpl = ve.getTemplate(name, "UTF-8");                   
         } catch(Exception e){
             log.error("Ocurrió un error en el armado de la plantilla:\n "+e.getMessage());
-            log.error("Path : " + SWBFeedUtils.getWPath(base) + "templates");
+            log.error("Path de template: " + SWBFeedUtils.getWPath(base) + "templates");
             e.getStackTrace();
         }
         return tmpl;

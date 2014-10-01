@@ -40,15 +40,21 @@ public class SWBFeedWidget extends GenericAdmResource {
             VelocityContext context = new VelocityContext();
             Resource base = paramsRequest.getResourceBase();
             String urlRSS = base.getAttribute("urlRSS", "");
-            int pageItems = Integer.parseInt(base.getAttribute("pageItems","10"));
+            String urlFull = base.getAttribute("urlFull", "");
+            int pageItems = SWBFeedUtils.toInteger(base.getAttribute("pageItems"), "10");        
+            int limitText = SWBFeedUtils.toInteger(base.getAttribute("limitText"), "0");
+
             
             if(!urlRSS.isEmpty()){
+                if(limitText != 0)
+                    SWBFeedReader.setCropText(true, limitText);
                 List feeds = SWBFeedReader.readRSS(urlRSS);
                 if( feeds.size() > 0 ){ 
-                    context.put("entries", feeds.subList(0, Math.max(feeds.size(),( pageItems - 1 ))));
+                    context.put("entries", feeds.subList(0, (pageItems > feeds.size()) ? feeds.size() : pageItems ));
                 }
             }
             context.put("urlRSS", urlRSS);
+            context.put("urlFull", urlFull);
             SWBFeedTemplates.buildTemplate(response, context, "SWBFeedWidget", base);
             
         } catch (Exception e){
@@ -68,7 +74,9 @@ public class SWBFeedWidget extends GenericAdmResource {
             context.put("actionURL", url);            
             context.put("msg", request.getParameter("msg"));
             context.put("urlRSS", paramReq.getResourceBase().getAttribute("urlRSS","")); 
+            context.put("urlFull", paramReq.getResourceBase().getAttribute("urlFull",""));
             context.put("pageItems", paramReq.getResourceBase().getAttribute("pageItems","10")); 
+            context.put("limitText", paramReq.getResourceBase().getAttribute("limitText","0")); 
             SWBFeedTemplates.buildTemplate(response, context, "SWBFeedWidgetAdmin", base);          
         } catch(Exception e){
             log.error("Ocurrió un error durante la construcción de la vista de administración. "+e.getMessage()); 
@@ -113,6 +121,7 @@ public class SWBFeedWidget extends GenericAdmResource {
                 if(thisJar != null){
                     try {
                         SWBFeedUtils.copyResourcesToDirectory(thisJar, "com/cap/apps/swbfeed/assets", path);
+                        SWBFeedUtils.copyResourcesToDirectory(thisJar, "com/cap/apps/swbfeedw", path);
                     } catch (IOException e){
                         log.error("Error intentando exportar el directorio assets. ", e);
                     }

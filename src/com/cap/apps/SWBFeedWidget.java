@@ -55,6 +55,7 @@ public class SWBFeedWidget extends GenericAdmResource {
             }
             context.put("urlRSS", urlRSS);
             context.put("urlFull", urlFull);
+            context.put("newWindow", base.getAttribute("newWindow","0"));
             SWBFeedTemplates.buildTemplate(response, context, "SWBFeedWidget", base);
             
         } catch (Exception e){
@@ -77,6 +78,7 @@ public class SWBFeedWidget extends GenericAdmResource {
             context.put("urlFull", paramReq.getResourceBase().getAttribute("urlFull",""));
             context.put("pageItems", paramReq.getResourceBase().getAttribute("pageItems","10")); 
             context.put("limitText", paramReq.getResourceBase().getAttribute("limitText","0")); 
+            context.put("newWindow", base.getAttribute("newWindow","0"));
             SWBFeedTemplates.buildTemplate(response, context, "SWBFeedWidgetAdmin", base);          
         } catch(Exception e){
             log.error("Ocurrió un error durante la construcción de la vista de administración. "+e.getMessage()); 

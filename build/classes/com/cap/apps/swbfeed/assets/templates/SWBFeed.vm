@@ -1,9 +1,10 @@
 
 <div id="rssFeed">
 	<ul id="noticiasnoticiasinfotec">
+	#set($openWin = "#if($newWindow == "1") _blank #{else} _self #end")
 	#foreach( $entry in $entries )
 		<li>
-			<h4><a href="$entry.getLink()">$entry.getTitle()</a></h4>
+			<h4><a target="${openWin}" href="$entry.getLink()">$entry.getTitle()</a></h4>
 			<span class="fecha">$entry.getPublishedDate().toString()</span>
 			<span class="fuente"></span>
 			<p>
@@ -17,12 +18,12 @@
 		<ul>
 			<li><a href="${pagePrevious}" class="prev" title="anterior">&nbsp;</a></li>
 			#foreach( $pag in $pagination.entrySet() )
-				<li><a href="$pag.value">$pag.key</a></li>
-			#end		
+                            <li>
+                                <a #if($pageNumber == $pag.key) class="active" #end
+                                href="$pag.value">$pag.key</a>
+                            </li>
+			#end
 		    <li><a href="${pageNext}" class="next" title="siguiente">&nbsp;</a></li>
-
-		    <!-- <li><a href="#" class="active">3</a></li> -->
-		    
 		</ul>
 	</div>		
 </div>

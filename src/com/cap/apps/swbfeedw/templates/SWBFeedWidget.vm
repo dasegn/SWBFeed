@@ -1,19 +1,33 @@
 <div id="rssFeed">
-	<ul id="noticiasnoticiasinfotec">
-	#foreach( $entry in $entries )
-		<li>
-			<h4><a href="$entry.getLink()">$entry.getTitle()</a></h4>
-			<span class="fecha">$entry.getPublishedDate().toString()</span>
-			<span class="fuente"></span>
-			<p>
-			    $entry.getDescription().getValue()
-			</p>
-		</li>
-	#end
-	</ul>
-	<div class="btnVer">
-            <a class="ver_mas" href="${urlFull}">
-                Ver más
-            </a>
+        <ul id="noticiasnoticiasinfotec">
+        #if($newWindow == "1")
+                #set($openWin = "_blank")
+        #else
+                #set($openWin = "_self")
+        #end
+
+        #foreach( $entry in $entries )
+                <li>
+                        <h4><a target="${openWin}" href="$entry.getLink()">$entry.getTitle()</a></h4>
+                        <span class="fecha">$entry.getPublishedDate().toString()</span>
+                        <span class="fuente"></span>
+                        <p>
+                            $entry.getDescription().getValue()
+                        </p>
+                </li>
+        #end
+        </ul>
+        <div class="paginador">
+                <p>Resultados ${entriesPageSize} de ${entriesTotalSize}   |   Página ${pageNumber} de ${pageLimit}</p>
+                <ul>
+                        <li><a href="${pagePrevious}" class="prev" title="anterior">&nbsp;</a></li>
+                        #foreach( $pag in $pagination.entrySet() )
+                            <li>
+                                <a #if($pageNumber == $pag.key) class="active" #end
+                                href="$pag.value">$pag.key</a>
+                            </li>
+                        #end
+                    <li><a href="${pageNext}" class="next" title="siguiente">&nbsp;</a></li>
+                </ul>
         </div>
 </div>

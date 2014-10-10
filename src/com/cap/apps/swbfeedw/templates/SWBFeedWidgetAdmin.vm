@@ -47,6 +47,15 @@
                     <span class="help-block">Elija un valor distinto a 0 para especificar un límite para la descripción de las entradas RSS.</span>
                 </div>
             </div>
+            <div class="form-group">                
+                <div class="col-sm-offset-2 col-sm-10"> 
+                    <label for="newWindow">                       
+                        <input type="checkbox" #if($newWindow == "1") checked #end value="1" id="newWindow" name="newWindow" />
+                        <input type="hidden" value="0" name="newWindow" />
+                        Abrir enlaces en una ventana nueva
+                    </label>
+                </div>
+            </div> 
             <div class="form-group">
               <!-- Form Actions -->
                 <div class="col-sm-offset-2 col-sm-10">

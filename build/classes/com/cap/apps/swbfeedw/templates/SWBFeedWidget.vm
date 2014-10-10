@@ -1,5 +1,6 @@
 <div id="rssFeed">
 	<ul id="noticiasnoticiasinfotec">
+        #set($openWin = "#if($newWindow == "1") _blank #{else} _self #end")
 	#foreach( $entry in $entries )
 		<li>
 			<h4><a href="$entry.getLink()">$entry.getTitle()</a></h4>
